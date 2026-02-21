@@ -1,18 +1,25 @@
 import { useState, useCallback, useEffect } from 'react';
-import { BoardCard, Connection, BoardState, CardType, ConnectionColor } from '@/types/board';
+import { BoardCard, Connection, BoardState, CardType, ConnectionColor, TimelineEvent, Speculation } from '@/types/board';
 
-const STORAGE_KEY = 'investigation-board';
+const STORAGE_KEY = 'investigation-board-v2';
 
 function generateId() {
   return Math.random().toString(36).substring(2, 9);
 }
 
+function defaultState(): BoardState {
+  return { cards: [], connections: [], timeline: [], speculations: [], caseName: 'Caso Sem Nome' };
+}
+
 function loadState(): BoardState {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) return JSON.parse(saved);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      return { ...defaultState(), ...parsed };
+    }
   } catch {}
-  return { cards: [], connections: [] };
+  return defaultState();
 }
 
 function saveState(state: BoardState) {
@@ -20,41 +27,44 @@ function saveState(state: BoardState) {
 }
 
 export function useBoard() {
-  const [cards, setCards] = useState<BoardCard[]>(() => loadState().cards);
-  const [connections, setConnections] = useState<Connection[]>(() => loadState().connections);
+  const [state, setState] = useState<BoardState>(loadState);
   const [connectingFrom, setConnectingFrom] = useState<string | null>(null);
   const [connectionColor, setConnectionColor] = useState<ConnectionColor>('red');
 
   useEffect(() => {
-    saveState({ cards, connections });
-  }, [cards, connections]);
+    saveState(state);
+  }, [state]);
 
+  const { cards, connections, timeline, speculations, caseName } = state;
+
+  // Cards
   const addCard = useCallback((type: CardType, title: string, description: string, imageUrl?: string) => {
-    const newCard: BoardCard = {
-      id: generateId(),
-      type,
-      title,
-      description,
-      x: 100 + Math.random() * 400,
-      y: 100 + Math.random() * 300,
-      imageUrl,
-    };
-    setCards(prev => [...prev, newCard]);
+    setState(prev => ({
+      ...prev,
+      cards: [...prev.cards, {
+        id: generateId(), type, title, description, imageUrl,
+        x: 150 + Math.random() * 500,
+        y: 100 + Math.random() * 300,
+      }],
+    }));
   }, []);
 
   const updateCardPosition = useCallback((id: string, x: number, y: number) => {
-    setCards(prev => prev.map(c => c.id === id ? { ...c, x, y } : c));
-  }, []);
-
-  const updateCard = useCallback((id: string, updates: Partial<BoardCard>) => {
-    setCards(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
+    setState(prev => ({
+      ...prev,
+      cards: prev.cards.map(c => c.id === id ? { ...c, x, y } : c),
+    }));
   }, []);
 
   const deleteCard = useCallback((id: string) => {
-    setCards(prev => prev.filter(c => c.id !== id));
-    setConnections(prev => prev.filter(c => c.fromId !== id && c.toId !== id));
+    setState(prev => ({
+      ...prev,
+      cards: prev.cards.filter(c => c.id !== id),
+      connections: prev.connections.filter(c => c.fromId !== id && c.toId !== id),
+    }));
   }, []);
 
+  // Connections
   const startConnection = useCallback((cardId: string) => {
     if (connectingFrom === null) {
       setConnectingFrom(cardId);
@@ -64,12 +74,12 @@ export function useBoard() {
              (c.fromId === cardId && c.toId === connectingFrom)
       );
       if (!exists) {
-        setConnections(prev => [...prev, {
-          id: generateId(),
-          fromId: connectingFrom,
-          toId: cardId,
-          color: connectionColor,
-        }]);
+        setState(prev => ({
+          ...prev,
+          connections: [...prev.connections, {
+            id: generateId(), fromId: connectingFrom, toId: cardId, color: connectionColor,
+          }],
+        }));
       }
       setConnectingFrom(null);
     } else {
@@ -78,27 +88,67 @@ export function useBoard() {
   }, [connectingFrom, connections, connectionColor]);
 
   const deleteConnection = useCallback((id: string) => {
-    setConnections(prev => prev.filter(c => c.id !== id));
+    setState(prev => ({
+      ...prev,
+      connections: prev.connections.filter(c => c.id !== id),
+    }));
   }, []);
 
-  const clearBoard = useCallback(() => {
-    setCards([]);
-    setConnections([]);
+  // Timeline
+  const addTimelineEvent = useCallback((time: string, description: string) => {
+    setState(prev => ({
+      ...prev,
+      timeline: [...prev.timeline, { id: generateId(), time, description }]
+        .sort((a, b) => a.time.localeCompare(b.time)),
+    }));
+  }, []);
+
+  const deleteTimelineEvent = useCallback((id: string) => {
+    setState(prev => ({
+      ...prev,
+      timeline: prev.timeline.filter(e => e.id !== id),
+    }));
+  }, []);
+
+  // Speculations
+  const addSpeculation = useCallback((text: string) => {
+    setState(prev => ({
+      ...prev,
+      speculations: [{ id: generateId(), text, createdAt: Date.now() }, ...prev.speculations],
+    }));
+  }, []);
+
+  const toggleSpeculation = useCallback((id: string) => {
+    setState(prev => ({
+      ...prev,
+      speculations: prev.speculations.map(s => s.id === id ? { ...s, resolved: !s.resolved } : s),
+    }));
+  }, []);
+
+  const deleteSpeculation = useCallback((id: string) => {
+    setState(prev => ({
+      ...prev,
+      speculations: prev.speculations.filter(s => s.id !== id),
+    }));
+  }, []);
+
+  // Case management
+  const setCaseName = useCallback((name: string) => {
+    setState(prev => ({ ...prev, caseName: name }));
+  }, []);
+
+  const resetBoard = useCallback(() => {
+    setState(defaultState());
+    setConnectingFrom(null);
   }, []);
 
   return {
-    cards,
-    connections,
-    connectingFrom,
-    connectionColor,
-    setConnectionColor,
-    addCard,
-    updateCardPosition,
-    updateCard,
-    deleteCard,
-    startConnection,
-    cancelConnection: () => setConnectingFrom(null),
-    deleteConnection,
-    clearBoard,
+    cards, connections, timeline, speculations, caseName,
+    connectingFrom, connectionColor, setConnectionColor,
+    addCard, updateCardPosition, deleteCard,
+    startConnection, cancelConnection: () => setConnectingFrom(null), deleteConnection,
+    addTimelineEvent, deleteTimelineEvent,
+    addSpeculation, toggleSpeculation, deleteSpeculation,
+    setCaseName, resetBoard,
   };
 }

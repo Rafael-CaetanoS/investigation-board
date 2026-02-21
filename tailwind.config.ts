@@ -8,9 +8,7 @@ export default {
     container: {
       center: true,
       padding: "2rem",
-      screens: {
-        "2xl": "1400px",
-      },
+      screens: { "2xl": "1400px" },
     },
     extend: {
       colors: {
@@ -59,11 +57,13 @@ export default {
           DEFAULT: "hsl(var(--theory))",
           foreground: "hsl(var(--theory-foreground))",
         },
-        timeline: {
-          DEFAULT: "hsl(var(--timeline))",
+        "timeline-color": {
+          DEFAULT: "hsl(var(--timeline-color))",
           foreground: "hsl(var(--timeline-foreground))",
         },
         "string-red": "hsl(var(--string-red))",
+        "string-green": "hsl(var(--string-green))",
+        "string-blue": "hsl(var(--string-blue))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
