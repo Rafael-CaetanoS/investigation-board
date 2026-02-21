@@ -9,13 +9,6 @@ const typeConfig: Record<CardType, { icon: typeof User; colorVar: string; glowVa
   timeline: { icon: Clock, colorVar: '--timeline-color', glowVar: '--timeline-glow', label: 'HORÁRIO' },
 };
 
-const typeBgClass: Record<CardType, string> = {
-  suspect: 'bg-suspect text-suspect-foreground',
-  evidence: 'bg-evidence text-evidence-foreground',
-  theory: 'bg-theory text-theory-foreground',
-  timeline: 'bg-timeline-color text-timeline-color-foreground',
-};
-
 interface Props {
   card: BoardCard;
   isConnecting: boolean;
@@ -57,20 +50,21 @@ export default function BoardCardComponent({ card, isConnecting, isConnectingSou
   return (
     <div
       className={`absolute select-none card-pin ${isDragging ? 'z-50' : 'z-10'}`}
-      style={{ left: card.x, top: card.y, width: 210 }}
+      style={{ left: card.x, top: card.y, width: 200 }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
     >
       <div
         className={`
-          rounded-sm overflow-hidden transition-all duration-200 border border-border/60
-          ${isDragging ? 'card-shadow-hover scale-[1.03]' : 'card-shadow'}
-          ${isConnectingSource ? 'ring-2 ring-string-red animate-pulse-glow' : ''}
-          ${isConnecting && !isConnectingSource ? 'hover:ring-2 hover:ring-string-red cursor-crosshair' : ''}
+          rounded overflow-hidden transition-all duration-200 border
+          ${isDragging ? 'card-shadow-hover scale-[1.04]' : 'card-shadow'}
+          ${isConnectingSource ? 'ring-2 ring-primary animate-pulse-glow' : ''}
+          ${isConnecting && !isConnectingSource ? 'hover:ring-2 hover:ring-primary cursor-crosshair' : ''}
         `}
         style={{
-          background: `linear-gradient(180deg, hsl(var(${config.colorVar}) / 0.08) 0%, hsl(var(--card)) 30%)`,
+          background: `hsl(0 0% 7%)`,
+          borderColor: `hsl(var(${config.colorVar}) / 0.25)`,
           borderLeft: `3px solid hsl(var(${config.colorVar}))`,
         }}
       >
@@ -78,36 +72,38 @@ export default function BoardCardComponent({ card, isConnecting, isConnectingSou
         {hasImage && (
           <div className="relative w-full h-28 overflow-hidden">
             <img src={card.imageUrl} alt={card.title} className="w-full h-full object-cover" draggable={false} />
-            <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[hsl(0,0%,7%)] via-transparent to-transparent" />
           </div>
         )}
 
-        {/* Type badge + actions */}
-        <div className={`${typeBgClass[card.type]} px-2.5 py-1 flex items-center justify-between`}>
+        {/* Type badge */}
+        <div className="px-2.5 py-1 flex items-center justify-between" style={{ background: `hsl(var(${config.colorVar}) / 0.12)` }}>
           <div className="flex items-center gap-1.5">
-            <Icon size={11} strokeWidth={2.5} />
-            <span className="text-[9px] font-bold tracking-[0.2em] font-detective">{config.label}</span>
+            <Icon size={10} style={{ color: `hsl(var(${config.colorVar}))` }} />
+            <span className="text-[8px] font-bold tracking-[0.25em] font-detective" style={{ color: `hsl(var(${config.colorVar}))` }}>
+              {config.label}
+            </span>
           </div>
           <div className="flex items-center gap-0.5" data-no-drag>
-            <button onClick={() => onConnect(card.id)} className="p-0.5 rounded hover:bg-black/20 transition-colors" title="Conectar">
-              <Link size={11} />
+            <button onClick={() => onConnect(card.id)} className="p-0.5 rounded hover:bg-foreground/10 transition-colors text-muted-foreground hover:text-foreground">
+              <Link size={10} />
             </button>
-            <button onClick={() => onDelete(card.id)} className="p-0.5 rounded hover:bg-black/20 transition-colors" title="Remover">
-              <X size={11} />
+            <button onClick={() => onDelete(card.id)} className="p-0.5 rounded hover:bg-primary/20 transition-colors text-muted-foreground hover:text-primary">
+              <X size={10} />
             </button>
           </div>
         </div>
 
         {/* Content */}
-        <div className="px-3 py-2 bg-card/90">
-          <h3 className="font-detective text-[13px] font-bold text-foreground leading-tight">{card.title}</h3>
+        <div className="px-3 py-2">
+          <h3 className="font-display text-[13px] font-bold text-foreground leading-tight">{card.title}</h3>
           {card.description && (
             <p className="text-[10px] text-muted-foreground font-typewriter leading-relaxed mt-1.5 line-clamp-3">{card.description}</p>
           )}
         </div>
 
-        {/* Bottom accent line */}
-        <div className="h-[2px]" style={{ background: `linear-gradient(90deg, hsl(var(${config.colorVar})), transparent)` }} />
+        {/* Bottom accent */}
+        <div className="h-[1px]" style={{ background: `linear-gradient(90deg, hsl(var(${config.colorVar}) / 0.5), transparent)` }} />
       </div>
     </div>
   );

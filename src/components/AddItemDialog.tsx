@@ -8,11 +8,11 @@ import { User, Search, Lightbulb, Clock, Plus, ImageIcon } from 'lucide-react';
 import { profileImages, evidenceImages } from '@/data/presetImages';
 import { PresetImage } from '@/types/board';
 
-const types: { value: CardType; label: string; icon: typeof User; colorClass: string }[] = [
-  { value: 'suspect', label: 'Suspeito', icon: User, colorClass: 'bg-suspect text-suspect-foreground' },
-  { value: 'evidence', label: 'Prova', icon: Search, colorClass: 'bg-evidence text-evidence-foreground' },
-  { value: 'theory', label: 'Teoria', icon: Lightbulb, colorClass: 'bg-theory text-theory-foreground' },
-  { value: 'timeline', label: 'Horário', icon: Clock, colorClass: 'bg-timeline text-timeline-foreground' },
+const types: { value: CardType; label: string; icon: typeof User; colorVar: string }[] = [
+  { value: 'suspect', label: 'Suspeito', icon: User, colorVar: '--suspect' },
+  { value: 'evidence', label: 'Prova', icon: Search, colorVar: '--evidence' },
+  { value: 'theory', label: 'Teoria', icon: Lightbulb, colorVar: '--theory' },
+  { value: 'timeline', label: 'Horário', icon: Clock, colorVar: '--timeline-color' },
 ];
 
 interface Props {
@@ -48,35 +48,41 @@ export default function AddItemDialog({ onAdd }: Props) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="gap-2 font-detective bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg">
-          <Plus size={16} />
-          Adicionar
+        <Button size="sm" className="gap-1.5 font-detective text-[10px] tracking-wider bg-primary text-primary-foreground hover:bg-primary/90 h-8">
+          <Plus size={13} />
+          ADICIONAR
         </Button>
       </DialogTrigger>
-      <DialogContent className="bg-card border-border max-w-lg">
+      <DialogContent className="bg-background border-border max-w-md">
         <DialogHeader>
-          <DialogTitle className="font-detective text-foreground text-lg">Nova Ficha</DialogTitle>
+          <DialogTitle className="font-display text-foreground text-lg font-bold">Nova Ficha</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Type selector */}
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-4 gap-1.5">
             {types.map(t => {
               const Icon = t.icon;
+              const isSelected = selectedType === t.value;
               return (
                 <button
                   key={t.value}
                   type="button"
                   onClick={() => handleTypeChange(t.value)}
                   className={`
-                    flex flex-col items-center gap-1 p-2.5 rounded border text-xs font-detective
+                    flex flex-col items-center gap-1 p-2.5 rounded border text-[10px] font-detective tracking-wider
                     transition-all duration-150
-                    ${selectedType === t.value
-                      ? `${t.colorClass} border-transparent scale-105 shadow-md`
-                      : 'border-border text-muted-foreground hover:border-foreground/30'
+                    ${isSelected
+                      ? 'border-transparent scale-105 shadow-md'
+                      : 'border-border text-muted-foreground hover:border-foreground/20'
                     }
                   `}
+                  style={isSelected ? {
+                    backgroundColor: `hsl(var(${t.colorVar}) / 0.15)`,
+                    color: `hsl(var(${t.colorVar}))`,
+                    borderColor: `hsl(var(${t.colorVar}) / 0.3)`,
+                  } : {}}
                 >
-                  <Icon size={20} />
+                  <Icon size={18} />
                   {t.label}
                 </button>
               );
@@ -86,33 +92,26 @@ export default function AddItemDialog({ onAdd }: Props) {
           {/* Image selector */}
           {availableImages.length > 0 && (
             <div>
-              <label className="text-xs text-muted-foreground font-detective flex items-center gap-1 mb-2">
-                <ImageIcon size={12} />
-                Imagem (opcional)
+              <label className="text-[10px] text-muted-foreground font-detective flex items-center gap-1 mb-2 tracking-wider">
+                <ImageIcon size={11} />
+                IMAGEM
               </label>
-              <div className="grid grid-cols-5 gap-2">
-                {/* No image option */}
+              <div className="grid grid-cols-5 gap-1.5">
                 <button
                   type="button"
                   onClick={() => setSelectedImage(undefined)}
-                  className={`
-                    aspect-square rounded border-2 overflow-hidden flex items-center justify-center text-[10px] text-muted-foreground font-typewriter
-                    transition-all duration-150
-                    ${!selectedImage ? 'border-primary shadow-md' : 'border-border/50 opacity-60 hover:opacity-100'}
-                  `}
+                  className={`aspect-square rounded border overflow-hidden flex items-center justify-center text-[9px] text-muted-foreground font-typewriter transition-all
+                    ${!selectedImage ? 'border-primary bg-primary/5' : 'border-border opacity-50 hover:opacity-80'}`}
                 >
-                  Sem foto
+                  Sem
                 </button>
                 {availableImages.map(img => (
                   <button
                     key={img.id}
                     type="button"
                     onClick={() => setSelectedImage(img.src)}
-                    className={`
-                      aspect-square rounded border-2 overflow-hidden
-                      transition-all duration-150
-                      ${selectedImage === img.src ? 'border-primary shadow-md scale-105' : 'border-border/50 opacity-70 hover:opacity-100'}
-                    `}
+                    className={`aspect-square rounded border overflow-hidden transition-all
+                      ${selectedImage === img.src ? 'border-primary scale-105' : 'border-border opacity-60 hover:opacity-100'}`}
                   >
                     <img src={img.src} alt={img.label} className="w-full h-full object-cover" />
                   </button>
@@ -125,17 +124,17 @@ export default function AddItemDialog({ onAdd }: Props) {
             placeholder="Título..."
             value={title}
             onChange={e => setTitle(e.target.value)}
-            className="font-detective bg-secondary border-border text-foreground placeholder:text-muted-foreground"
+            className="font-detective bg-card border-border text-foreground placeholder:text-muted-foreground"
             autoFocus
           />
           <Textarea
-            placeholder="Descrição / Detalhes..."
+            placeholder="Descrição..."
             value={description}
             onChange={e => setDescription(e.target.value)}
-            className="font-typewriter bg-secondary border-border text-foreground placeholder:text-muted-foreground resize-none"
+            className="font-typewriter bg-card border-border text-foreground placeholder:text-muted-foreground resize-none"
             rows={3}
           />
-          <Button type="submit" className="w-full font-detective bg-primary text-primary-foreground hover:bg-primary/90" disabled={!title.trim()}>
+          <Button type="submit" className="w-full font-detective tracking-wider bg-primary text-primary-foreground hover:bg-primary/90" disabled={!title.trim()}>
             📌 Fixar no Mural
           </Button>
         </form>

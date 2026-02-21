@@ -1,6 +1,6 @@
 import { CardType, ConnectionColor } from '@/types/board';
 import AddItemDialog from './AddItemDialog';
-import { Trash2, X, RotateCcw, FileText, ArrowLeft } from 'lucide-react';
+import { X, RotateCcw, ArrowLeft, Crosshair } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
@@ -38,62 +38,61 @@ export default function BoardToolbar({
   };
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 glass-panel border-b border-border">
-      <div className="flex items-center justify-between px-4 py-2">
-        {/* Left: Back + Case name */}
+    <div className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
+      <div className="flex items-center justify-between px-4 h-12">
+        {/* Left */}
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate('/')}
-            className="p-1.5 rounded hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-            title="Voltar aos casos"
+            className="p-1.5 rounded-md hover:bg-card transition-colors text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft size={16} />
           </button>
-          <div className="flex items-center gap-2">
-            <FileText size={16} className="text-primary" />
-            {isEditing ? (
-              <input
-                value={tempName}
-                onChange={e => setTempName(e.target.value)}
-                onBlur={handleNameSave}
-                onKeyDown={e => { if (e.key === 'Enter') handleNameSave(); }}
-                className="bg-muted/50 border border-primary/50 rounded px-2 py-0.5 text-sm font-detective text-primary w-48 focus:outline-none"
-                autoFocus
-              />
-            ) : (
-              <button
-                onClick={() => { setTempName(caseName); setIsEditing(true); }}
-                className="font-detective text-base text-primary hover:text-primary/80 transition-colors tracking-wide"
-                title="Clique para renomear"
-              >
-                {caseName}
-              </button>
-            )}
-          </div>
-          <div className="flex items-center gap-1.5 bg-muted/50 px-2 py-0.5 rounded text-[9px] text-muted-foreground font-typewriter">
-            <span>{cardCount} fichas</span>
-            <span className="text-border">·</span>
-            <span>{connectionCount} conexões</span>
-          </div>
+          
+          <div className="w-[1px] h-5 bg-border" />
+          
+          {isEditing ? (
+            <input
+              value={tempName}
+              onChange={e => setTempName(e.target.value)}
+              onBlur={handleNameSave}
+              onKeyDown={e => { if (e.key === 'Enter') handleNameSave(); }}
+              className="bg-card border border-primary/40 rounded px-2 py-0.5 text-sm font-display font-bold text-primary w-52 focus:outline-none"
+              autoFocus
+            />
+          ) : (
+            <button
+              onClick={() => { setTempName(caseName); setIsEditing(true); }}
+              className="font-display text-sm font-bold text-primary hover:text-primary/80 transition-colors"
+            >
+              {caseName}
+            </button>
+          )}
+
+          <span className="text-[9px] text-muted-foreground font-typewriter bg-card px-2 py-0.5 rounded border border-border">
+            {cardCount} fichas · {connectionCount} fios
+          </span>
         </div>
 
-        {/* Right: Actions */}
+        {/* Right */}
         <div className="flex items-center gap-2">
-          {/* Connection color */}
-          <div className="flex items-center gap-1.5 bg-muted/30 rounded px-2 py-1">
-            <span className="text-[9px] text-muted-foreground font-detective tracking-wider">LINHA</span>
+          {/* Connection color picker */}
+          <div className="flex items-center gap-1 bg-card rounded-md px-2 py-1 border border-border">
+            <Crosshair size={10} className="text-muted-foreground" />
             {colorOptions.map(opt => (
               <button
                 key={opt.value}
                 onClick={() => onConnectionColorChange(opt.value)}
                 title={opt.label}
-                className={`
-                  w-4 h-4 rounded-full transition-all duration-150 border-2
-                  ${connectionColor === opt.value
-                    ? 'border-foreground scale-125'
-                    : 'border-transparent opacity-40 hover:opacity-70'}
-                `}
-                style={{ backgroundColor: `hsl(var(${opt.cssVar}))` }}
+                className={`w-3.5 h-3.5 rounded-full transition-all ${
+                  connectionColor === opt.value
+                    ? 'scale-125 ring-1 ring-offset-1 ring-offset-background'
+                    : 'opacity-30 hover:opacity-60'
+                }`}
+                style={{
+                  backgroundColor: `hsl(var(${opt.cssVar}))`,
+                  ...(connectionColor === opt.value ? { ringColor: `hsl(var(${opt.cssVar}))` } : {}),
+                }}
               />
             ))}
           </div>
@@ -103,7 +102,7 @@ export default function BoardToolbar({
               variant="outline"
               size="sm"
               onClick={onCancelConnection}
-              className="gap-1 text-string-red border-string-red/50 hover:bg-accent/10 font-detective text-[10px] h-7"
+              className="gap-1 text-primary border-primary/30 hover:bg-primary/10 font-detective text-[10px] h-7"
             >
               <X size={12} />
               Cancelar
@@ -113,21 +112,20 @@ export default function BoardToolbar({
           <AddItemDialog onAdd={onAdd} />
 
           <button
-            onClick={() => { if (window.confirm('⚠️ Resetar todo o caso e começar uma nova investigação?')) onReset(); }}
-            className="flex items-center gap-1 px-2 py-1.5 rounded text-[10px] font-detective text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors border border-border"
-            title="Novo caso"
+            onClick={() => { if (window.confirm('⚠️ Resetar todo o caso?')) onReset(); }}
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-md text-[10px] font-detective text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all border border-border"
           >
-            <RotateCcw size={12} />
-            NOVO CASO
+            <RotateCcw size={11} />
+            NOVO
           </button>
         </div>
       </div>
 
-      {/* Connection mode indicator */}
+      {/* Connection mode bar */}
       {isConnecting && (
-        <div className="px-4 py-1 border-t border-string-red/20" style={{ background: 'linear-gradient(90deg, hsl(var(--string-red) / 0.1), transparent)' }}>
-          <span className="text-[10px] text-string-red font-detective animate-pulse">
-            ⬤ Modo conexão ativo — selecione a segunda ficha para ligar
+        <div className="px-4 py-1.5 border-t border-primary/20 bg-primary/5">
+          <span className="text-[10px] text-primary font-detective animate-pulse-glow tracking-wider">
+            ● MODO CONEXÃO — Selecione a segunda ficha
           </span>
         </div>
       )}

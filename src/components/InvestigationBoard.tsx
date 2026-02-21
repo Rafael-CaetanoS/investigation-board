@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Search } from 'lucide-react';
 import { useBoard } from '@/hooks/useBoard';
 import BoardCardComponent from './BoardCardComponent';
 import ConnectionLines from './ConnectionLines';
@@ -12,7 +13,6 @@ export default function InvestigationBoard() {
   const board = useBoard();
   const navigate = useNavigate();
 
-  // Load case name from localStorage
   useEffect(() => {
     const name = localStorage.getItem('active-case-name');
     if (name && board.caseName === 'Caso Sem Nome') {
@@ -42,21 +42,25 @@ export default function InvestigationBoard() {
 
       {/* Board */}
       <div
-        className="flex-1 relative overflow-auto board-texture"
+        className="flex-1 relative overflow-auto"
         style={{
           backgroundImage: `url(${corkTexture})`,
           backgroundSize: '512px 512px',
           backgroundRepeat: 'repeat',
-          marginTop: board.connectingFrom ? 76 : 44,
+          marginTop: board.connectingFrom ? 76 : 48,
           marginBottom: 44,
         }}
       >
-        {/* Overlays */}
+        {/* Dark overlays */}
         <div className="absolute inset-0 pointer-events-none" style={{
-          background: 'linear-gradient(180deg, rgba(20,14,10,0.5) 0%, rgba(20,14,10,0.2) 50%, rgba(20,14,10,0.55) 100%)'
+          background: 'linear-gradient(180deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 40%, rgba(0,0,0,0.75) 100%)'
         }} />
         <div className="absolute inset-0 pointer-events-none" style={{
-          background: 'radial-gradient(ellipse at center, transparent 30%, rgba(10,6,4,0.6) 100%)'
+          background: 'radial-gradient(ellipse at center, transparent 20%, rgba(0,0,0,0.6) 100%)'
+        }} />
+        {/* Subtle red ambient */}
+        <div className="absolute inset-0 pointer-events-none" style={{
+          background: 'radial-gradient(ellipse at 50% 30%, rgba(180,20,20,0.03) 0%, transparent 60%)'
         }} />
 
         <div className="relative" style={{ minHeight: '200vh', minWidth: '200vw' }}>
@@ -80,11 +84,13 @@ export default function InvestigationBoard() {
 
           {board.cards.length === 0 && (
             <div className="absolute top-1/4 left-1/2 -translate-x-1/2 pointer-events-none text-center">
-              <div className="space-y-3">
-                <div className="text-5xl opacity-10">🔍</div>
-                <p className="font-display text-xl text-foreground/15 tracking-wide">Mural vazio</p>
-                <p className="text-xs text-muted-foreground/30 font-typewriter max-w-xs mx-auto">
-                  Adicione suspeitos, provas, teorias e horários para começar a investigação.
+              <div className="space-y-4">
+                <div className="w-16 h-16 rounded-full border border-primary/10 flex items-center justify-center mx-auto">
+                  <Search size={24} className="text-primary/15" />
+                </div>
+                <p className="font-display text-xl text-foreground/10 tracking-wide">Mural vazio</p>
+                <p className="text-[11px] text-muted-foreground/20 font-typewriter max-w-xs mx-auto">
+                  Adicione suspeitos, provas e teorias para começar.
                 </p>
               </div>
             </div>
