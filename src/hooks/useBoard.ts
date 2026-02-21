@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { BoardCard, Connection, BoardState, CardType } from '@/types/board';
+import { BoardCard, Connection, BoardState, CardType, ConnectionColor } from '@/types/board';
 
 const STORAGE_KEY = 'investigation-board';
 
@@ -23,12 +23,13 @@ export function useBoard() {
   const [cards, setCards] = useState<BoardCard[]>(() => loadState().cards);
   const [connections, setConnections] = useState<Connection[]>(() => loadState().connections);
   const [connectingFrom, setConnectingFrom] = useState<string | null>(null);
+  const [connectionColor, setConnectionColor] = useState<ConnectionColor>('red');
 
   useEffect(() => {
     saveState({ cards, connections });
   }, [cards, connections]);
 
-  const addCard = useCallback((type: CardType, title: string, description: string) => {
+  const addCard = useCallback((type: CardType, title: string, description: string, imageUrl?: string) => {
     const newCard: BoardCard = {
       id: generateId(),
       type,
@@ -36,6 +37,7 @@ export function useBoard() {
       description,
       x: 100 + Math.random() * 400,
       y: 100 + Math.random() * 300,
+      imageUrl,
     };
     setCards(prev => [...prev, newCard]);
   }, []);
@@ -66,13 +68,14 @@ export function useBoard() {
           id: generateId(),
           fromId: connectingFrom,
           toId: cardId,
+          color: connectionColor,
         }]);
       }
       setConnectingFrom(null);
     } else {
       setConnectingFrom(null);
     }
-  }, [connectingFrom, connections]);
+  }, [connectingFrom, connections, connectionColor]);
 
   const deleteConnection = useCallback((id: string) => {
     setConnections(prev => prev.filter(c => c.id !== id));
@@ -87,6 +90,8 @@ export function useBoard() {
     cards,
     connections,
     connectingFrom,
+    connectionColor,
+    setConnectionColor,
     addCard,
     updateCardPosition,
     updateCard,
