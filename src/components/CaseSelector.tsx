@@ -159,8 +159,29 @@ export default function CaseSelector() {
                     <span className="text-[9px] text-muted-foreground/40 font-typewriter tracking-wider">
                       CASO #{String(i + 1).padStart(3, '0')}
                     </span>
-                    <div className="flex items-center gap-1 text-primary opacity-0 group-hover:opacity-100 transition-all text-[10px] font-detective tracking-wider">
-                      INVESTIGAR <ArrowRight size={10} />
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => {
+                          const current = localStorage.getItem(`case-doc-url:${c.id}`) || '';
+                          const url = window.prompt('Cole o link público do Google Drive (PDF) para este caso:', current || '');
+                          if (url !== null) {
+                            if (url.trim() === '') {
+                              localStorage.removeItem(`case-doc-url:${c.id}`);
+                              alert('Link removido.');
+                            } else {
+                              localStorage.setItem(`case-doc-url:${c.id}`, url.trim());
+                              alert('Link salvo.');
+                            }
+                          }
+                        }}
+                        className="opacity-0 group-hover:opacity-100 transition-all text-[10px] font-detective tracking-wider px-2 py-1 rounded border border-border hover:bg-card"
+                        title="Vincular PDF do caso"
+                      >
+                        VINCULAR
+                      </button>
+                      <div className="flex items-center gap-1 text-primary opacity-0 group-hover:opacity-100 transition-all text-[10px] font-detective tracking-wider">
+                        INVESTIGAR <ArrowRight size={10} />
+                      </div>
                     </div>
                   </div>
                 </div>

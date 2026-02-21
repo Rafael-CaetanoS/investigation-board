@@ -40,3 +40,43 @@
 .read-the-docs {
   color: #888;
 }
+
+/* Hide scrollbars but keep scrolling functional */
+.hide-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Utility: hide visual scroll but keep small padding for touch devices */
+.hide-scrollbar.touch-pad {
+  padding-right: 6px;
+}
+
+/* Aggressive global scrollbar hide (covers most browsers). Keep scrolling functional. */
+html, body, #root, * {
+  -ms-overflow-style: none !important; /* IE and Edge */
+  scrollbar-width: none !important; /* Firefox */
+}
+*::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+
+/* Scroller used by InvestigationBoard: clip native scrollbars offscreen
+   by adding padding and negative margins on the inner content. This
+   helps hide scrollbars even when the OS/browser shows them by default. */
+.board-scroller {
+  position: relative;
+}
+.board-scroller > [data-board-container] {
+  /* keep the extra offset in sync with the inline styles used in the component */
+  padding-right: 24px;
+  padding-bottom: 24px;
+  margin-right: -24px;
+  margin-bottom: -24px;
+}
+

@@ -1,6 +1,6 @@
 import { BoardCard, Connection, ConnectionColor } from '@/types/board';
 
-const CARD_WIDTH = 210;
+const CARD_WIDTH = 200;
 
 const colorMap: Record<ConnectionColor, string> = {
   red: 'hsl(0, 72%, 50%)',
@@ -16,6 +16,10 @@ interface Props {
 
 export default function ConnectionLines({ connections, cards, onDeleteConnection }: Props) {
   const cardMap = new Map(cards.map(c => [c.id, c]));
+
+  // Container that holds the board; used to compute coordinates relative to the svg.
+  const container = typeof document !== 'undefined' ? document.querySelector('[data-board-container]') as HTMLElement | null : null;
+  const containerRect = container ? container.getBoundingClientRect() : { left: 0, top: 0 } as DOMRect;
 
   return (
     <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 5 }}>
@@ -35,10 +39,24 @@ export default function ConnectionLines({ connections, cards, onDeleteConnection
         const to = cardMap.get(conn.toId);
         if (!from || !to) return null;
 
-        const x1 = from.x + CARD_WIDTH / 2;
-        const y1 = from.y + 8;
-        const x2 = to.x + CARD_WIDTH / 2;
-        const y2 = to.y + 8;
+        // Try to locate DOM elements for more accurate pin positions; fallback to stored coordinates.
+        const fromEl = typeof document !== 'undefined' ? document.querySelector(`[data-card-id="${conn.fromId}"]`) as HTMLElement | null : null;
+        const toEl = typeof document !== 'undefined' ? document.querySelector(`[data-card-id="${conn.toId}"]`) as HTMLElement | null : null;
+
+        let x1: number, y1: number, x2: number, y2: number;
+        if (fromEl && toEl && containerRect) {
+          const fRect = fromEl.getBoundingClientRect();
+          const tRect = toEl.getBoundingClientRect();
+          x1 = fRect.left - containerRect.left + fRect.width / 2;
+          y1 = fRect.top - containerRect.top + 8;
+          x2 = tRect.left - containerRect.left + tRect.width / 2;
+          y2 = tRect.top - containerRect.top + 8;
+        } else {
+          x1 = from.x + CARD_WIDTH / 2;
+          y1 = from.y + 8;
+          x2 = to.x + CARD_WIDTH / 2;
+          y2 = to.y + 8;
+        }
 
         const color = conn.color || 'red';
         const strokeColor = colorMap[color];

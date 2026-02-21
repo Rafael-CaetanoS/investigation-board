@@ -96,10 +96,23 @@ export function useBoard() {
 
   // Timeline
   const addTimelineEvent = useCallback((time: string, description: string) => {
+    const toMinutes = (t: string) => {
+      try {
+        const parts = t.split(':');
+        if (parts.length < 2) return Number.MAX_SAFE_INTEGER;
+        const hh = parseInt(parts[0], 10);
+        const mm = parseInt(parts[1], 10);
+        if (Number.isNaN(hh) || Number.isNaN(mm)) return Number.MAX_SAFE_INTEGER;
+        return hh * 60 + mm;
+      } catch {
+        return Number.MAX_SAFE_INTEGER;
+      }
+    };
+
     setState(prev => ({
       ...prev,
       timeline: [...prev.timeline, { id: generateId(), time, description }]
-        .sort((a, b) => a.time.localeCompare(b.time)),
+        .sort((a, b) => toMinutes(a.time) - toMinutes(b.time)),
     }));
   }, []);
 
@@ -138,7 +151,12 @@ export function useBoard() {
   }, []);
 
   const resetBoard = useCallback(() => {
-    setState(defaultState());
+    const def = defaultState();
+    setState(def);
+    // remove persisted state so new mounts load fresh
+    try { localStorage.removeItem(STORAGE_KEY); localStorage.removeItem('active-case-name'); } catch {}
+    // ensure persistence reflects reset immediately
+    try { saveState(def); } catch {}
     setConnectingFrom(null);
   }, []);
 

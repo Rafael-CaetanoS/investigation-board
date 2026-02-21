@@ -47,11 +47,11 @@ export default function TimelineBar({ events, onAdd, onDelete }: Props) {
         <div className="px-4 pb-3">
           <div className="flex gap-2 mb-3">
             <input
-              type="text"
+              type="time"
               value={newTime}
               onChange={e => setNewTime(e.target.value)}
               placeholder="Horário"
-              className="w-24 bg-card border border-border rounded px-2 py-1.5 text-[11px] text-foreground font-typewriter placeholder:text-muted-foreground focus:outline-none focus:border-primary/40"
+              className="w-28 bg-card border border-border rounded px-2 py-1.5 text-[11px] text-foreground font-typewriter placeholder:text-muted-foreground focus:outline-none focus:border-primary/40"
             />
             <input
               type="text"
@@ -70,31 +70,37 @@ export default function TimelineBar({ events, onAdd, onDelete }: Props) {
             </button>
           </div>
 
-          <div className="overflow-x-auto custom-scrollbar pb-2">
+          <div className="overflow-x-auto custom-scrollbar hide-scrollbar pb-2">
             {events.length === 0 ? (
               <p className="text-center text-[10px] text-muted-foreground/30 font-typewriter py-4">
                 Adicione eventos para construir a cronologia
               </p>
             ) : (
               <div className="flex items-start gap-0 min-w-max relative">
-                <div className="absolute top-[8px] left-4 right-4 h-[1px] bg-primary/20" />
-                {events.map(evt => (
-                  <div key={evt.id} className="flex flex-col items-center min-w-[130px] relative group px-2">
-                    <div className="w-4 h-4 rounded-full border-2 border-primary bg-background z-10 flex items-center justify-center">
-                      <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                <div className="absolute top-[8px] left-4 right-4 h-[1px] bg-primary/40" />
+                {events.map((evt, idx) => {
+                  const isNewest = idx === events.length - 1;
+                  return (
+                    <div key={evt.id} className="flex flex-col items-center min-w-[140px] relative group px-3">
+                    <div className="w-5 h-5 rounded-full border-2 border-primary bg-primary/10 z-10 flex items-center justify-center shadow-sm">
+                      <div className="w-2.5 h-2.5 rounded-full bg-primary" />
                     </div>
-                    <span className="font-detective text-[11px] text-primary mt-1.5 font-bold">{evt.time}</span>
-                    <p className="text-[10px] text-foreground/60 font-typewriter text-center leading-tight mt-0.5 max-w-[120px]">
+                    <span className={`font-detective text-[12px] text-primary mt-2 tracking-tight ${isNewest ? 'font-black' : 'font-extrabold'}`}>{evt.time}</span>
+                    <p className={`text-[11px] text-foreground font-typewriter text-center leading-tight mt-1 max-w-[140px] ${isNewest ? 'font-black text-foreground' : 'font-medium text-foreground'}`}>
                       {evt.description}
                     </p>
+                    {isNewest && (
+                      <div className="mt-2 px-2 py-0.5 text-[10px] bg-primary text-primary-foreground rounded-full font-detective tracking-wider">NOVO</div>
+                    )}
                     <button
                       onClick={() => onDelete(evt.id)}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity mt-1 p-0.5 rounded hover:bg-primary/10"
+                      className="opacity-0 group-hover:opacity-100 transition-opacity mt-1 p-1 rounded hover:bg-primary/10"
                     >
-                      <X size={9} className="text-muted-foreground" />
+                      <X size={11} className="text-primary" />
                     </button>
-                  </div>
-                ))}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>

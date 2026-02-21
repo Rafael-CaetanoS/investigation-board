@@ -16,6 +16,7 @@ interface Props {
   connectionCount: number;
   connectionColor: ConnectionColor;
   onConnectionColorChange: (color: ConnectionColor) => void;
+  onOpenCaseReader?: () => void;
 }
 
 const colorOptions: { value: ConnectionColor; label: string; cssVar: string }[] = [
@@ -38,60 +39,57 @@ export default function BoardToolbar({
   };
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
-      <div className="flex items-center justify-between px-4 h-12">
+    <div className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-sm border-b border-border shadow-sm">
+      <div className="flex items-center justify-between px-5 py-2 h-14">
         {/* Left */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/')}
-            className="p-1.5 rounded-md hover:bg-card transition-colors text-muted-foreground hover:text-foreground"
+            className="p-2 rounded-md hover:bg-card transition-colors text-muted-foreground hover:text-foreground flex items-center justify-center"
+            title="Voltar"
           >
             <ArrowLeft size={16} />
           </button>
-          
-          <div className="w-[1px] h-5 bg-border" />
-          
-          {isEditing ? (
-            <input
-              value={tempName}
-              onChange={e => setTempName(e.target.value)}
-              onBlur={handleNameSave}
-              onKeyDown={e => { if (e.key === 'Enter') handleNameSave(); }}
-              className="bg-card border border-primary/40 rounded px-2 py-0.5 text-sm font-display font-bold text-primary w-52 focus:outline-none"
-              autoFocus
-            />
-          ) : (
-            <button
-              onClick={() => { setTempName(caseName); setIsEditing(true); }}
-              className="font-display text-sm font-bold text-primary hover:text-primary/80 transition-colors"
-            >
-              {caseName}
-            </button>
-          )}
 
-          <span className="text-[9px] text-muted-foreground font-typewriter bg-card px-2 py-0.5 rounded border border-border">
-            {cardCount} fichas · {connectionCount} fios
-          </span>
+          <div className="flex flex-col">
+            {isEditing ? (
+              <input
+                value={tempName}
+                onChange={e => setTempName(e.target.value)}
+                onBlur={handleNameSave}
+                onKeyDown={e => { if (e.key === 'Enter') handleNameSave(); }}
+                className="bg-card border border-primary/30 rounded px-3 py-1 text-sm font-display font-bold text-primary w-64 focus:outline-none"
+                autoFocus
+              />
+            ) : (
+              <button
+                onClick={() => { setTempName(caseName); setIsEditing(true); }}
+                className="font-display text-sm font-bold text-primary hover:text-primary/90 transition-colors text-left"
+              >
+                {caseName}
+              </button>
+            )}
+            <span className="text-[11px] text-muted-foreground font-typewriter mt-0.5">{cardCount} fichas · {connectionCount} fios</span>
+          </div>
         </div>
 
         {/* Right */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {/* Connection color picker */}
-          <div className="flex items-center gap-1 bg-card rounded-md px-2 py-1 border border-border">
-            <Crosshair size={10} className="text-muted-foreground" />
+          <div className="flex items-center gap-2 bg-card rounded-xl px-3 py-1 border border-border shadow-sm">
+            <Crosshair size={12} className="text-muted-foreground" />
             {colorOptions.map(opt => (
               <button
                 key={opt.value}
                 onClick={() => onConnectionColorChange(opt.value)}
                 title={opt.label}
-                className={`w-3.5 h-3.5 rounded-full transition-all ${
+                className={`w-5 h-5 rounded-full transition-transform flex-shrink-0 ${
                   connectionColor === opt.value
-                    ? 'scale-125 ring-1 ring-offset-1 ring-offset-background'
-                    : 'opacity-30 hover:opacity-60'
+                    ? 'scale-110 ring-2 ring-offset-1 ring-offset-background'
+                    : 'opacity-60 hover:opacity-90'
                 }`}
                 style={{
                   backgroundColor: `hsl(var(${opt.cssVar}))`,
-                  ...(connectionColor === opt.value ? { ringColor: `hsl(var(${opt.cssVar}))` } : {}),
                 }}
               />
             ))}
@@ -102,9 +100,9 @@ export default function BoardToolbar({
               variant="outline"
               size="sm"
               onClick={onCancelConnection}
-              className="gap-1 text-primary border-primary/30 hover:bg-primary/10 font-detective text-[10px] h-7"
+              className="gap-1 text-primary border-primary/30 hover:bg-primary/10 font-detective text-[11px] h-8"
             >
-              <X size={12} />
+              <X size={14} />
               Cancelar
             </Button>
           )}
@@ -112,19 +110,30 @@ export default function BoardToolbar({
           <AddItemDialog onAdd={onAdd} />
 
           <button
-            onClick={() => { if (window.confirm('⚠️ Resetar todo o caso?')) onReset(); }}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-md text-[10px] font-detective text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all border border-border"
+            onClick={() => onOpenCaseReader && onOpenCaseReader()}
+            className="flex items-center gap-2 px-3 py-1 rounded-md text-[11px] font-detective text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all border border-border"
+            title="Ler caso"
           >
-            <RotateCcw size={11} />
-            NOVO
+            LER CASO
+          </button>
+
+          
+
+          <button
+            onClick={() => { if (window.confirm('⚠️ Resetar todo o caso?')) onReset(); }}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-md text-[11px] font-detective text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all border border-border"
+            title="Criar novo caso"
+          >
+            <RotateCcw size={14} />
+            RESET
           </button>
         </div>
       </div>
 
       {/* Connection mode bar */}
       {isConnecting && (
-        <div className="px-4 py-1.5 border-t border-primary/20 bg-primary/5">
-          <span className="text-[10px] text-primary font-detective animate-pulse-glow tracking-wider">
+        <div className="px-5 py-2 border-t border-primary/20 bg-primary/6">
+          <span className="text-[12px] text-primary font-detective animate-pulse-glow tracking-wider">
             ● MODO CONEXÃO — Selecione a segunda ficha
           </span>
         </div>
