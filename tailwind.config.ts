@@ -47,6 +47,23 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        suspect: {
+          DEFAULT: "hsl(var(--suspect))",
+          foreground: "hsl(var(--suspect-foreground))",
+        },
+        evidence: {
+          DEFAULT: "hsl(var(--evidence))",
+          foreground: "hsl(var(--evidence-foreground))",
+        },
+        theory: {
+          DEFAULT: "hsl(var(--theory))",
+          foreground: "hsl(var(--theory-foreground))",
+        },
+        timeline: {
+          DEFAULT: "hsl(var(--timeline))",
+          foreground: "hsl(var(--timeline-foreground))",
+        },
+        "string-red": "hsl(var(--string-red))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -65,20 +82,12 @@ export default {
       },
       keyframes: {
         "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
         },
       },
       animation: {
