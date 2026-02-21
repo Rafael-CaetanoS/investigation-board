@@ -1,11 +1,14 @@
 import { CardType, ConnectionColor } from '@/types/board';
 import AddItemDialog from './AddItemDialog';
-import { Trash2, X } from 'lucide-react';
+import { Trash2, X, RotateCcw, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useState } from 'react';
 
 interface Props {
+  caseName: string;
+  onCaseNameChange: (name: string) => void;
   onAdd: (type: CardType, title: string, description: string, imageUrl?: string) => void;
-  onClear: () => void;
+  onReset: () => void;
   isConnecting: boolean;
   onCancelConnection: () => void;
   cardCount: number;
@@ -14,77 +17,108 @@ interface Props {
   onConnectionColorChange: (color: ConnectionColor) => void;
 }
 
-const colorOptions: { value: ConnectionColor; label: string; cssColor: string }[] = [
-  { value: 'red', label: 'Vermelho', cssColor: 'bg-[hsl(0,70%,50%)]' },
-  { value: 'green', label: 'Verde', cssColor: 'bg-[hsl(140,60%,45%)]' },
-  { value: 'blue', label: 'Azul', cssColor: 'bg-[hsl(210,70%,55%)]' },
+const colorOptions: { value: ConnectionColor; label: string; cssVar: string }[] = [
+  { value: 'red', label: 'Vermelho', cssVar: '--string-red' },
+  { value: 'green', label: 'Verde', cssVar: '--string-green' },
+  { value: 'blue', label: 'Azul', cssVar: '--string-blue' },
 ];
 
-export default function BoardToolbar({ onAdd, onClear, isConnecting, onCancelConnection, cardCount, connectionCount, connectionColor, onConnectionColorChange }: Props) {
+export default function BoardToolbar({
+  caseName, onCaseNameChange, onAdd, onReset, isConnecting, onCancelConnection,
+  cardCount, connectionCount, connectionColor, onConnectionColorChange,
+}: Props) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [tempName, setTempName] = useState(caseName);
+
+  const handleNameSave = () => {
+    onCaseNameChange(tempName.trim() || 'Caso Sem Nome');
+    setIsEditing(false);
+  };
+
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 bg-secondary/95 backdrop-blur-md border-b border-border shadow-[0_4px_20px_rgba(0,0,0,0.4)]">
-      <div className="flex items-center justify-between px-4 py-2.5">
-        <div className="flex items-center gap-4">
-          <h1 className="font-detective text-xl text-primary tracking-wider">
-            🔍 Mural de Investigação
-          </h1>
-          <span className="text-[10px] text-muted-foreground font-typewriter bg-muted px-2 py-0.5 rounded">
-            {cardCount} fichas · {connectionCount} conexões
-          </span>
+    <div className="fixed top-0 left-0 right-0 z-50 glass-panel border-b border-border">
+      <div className="flex items-center justify-between px-4 py-2">
+        {/* Left: Case name */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <FileText size={16} className="text-primary" />
+            {isEditing ? (
+              <input
+                value={tempName}
+                onChange={e => setTempName(e.target.value)}
+                onBlur={handleNameSave}
+                onKeyDown={e => { if (e.key === 'Enter') handleNameSave(); }}
+                className="bg-muted/50 border border-primary/50 rounded px-2 py-0.5 text-sm font-detective text-primary w-48 focus:outline-none"
+                autoFocus
+              />
+            ) : (
+              <button
+                onClick={() => { setTempName(caseName); setIsEditing(true); }}
+                className="font-detective text-base text-primary hover:text-primary/80 transition-colors tracking-wide"
+                title="Clique para renomear"
+              >
+                {caseName}
+              </button>
+            )}
+          </div>
+          <div className="flex items-center gap-1.5 bg-muted/50 px-2 py-0.5 rounded text-[9px] text-muted-foreground font-typewriter">
+            <span>{cardCount} fichas</span>
+            <span className="text-border">·</span>
+            <span>{connectionCount} conexões</span>
+          </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          {/* Connection color selector */}
-          <div className="flex items-center gap-1.5">
-            <span className="text-[10px] text-muted-foreground font-detective">Cor da linha:</span>
+        {/* Right: Actions */}
+        <div className="flex items-center gap-2">
+          {/* Connection color */}
+          <div className="flex items-center gap-1.5 bg-muted/30 rounded px-2 py-1">
+            <span className="text-[9px] text-muted-foreground font-detective tracking-wider">LINHA</span>
             {colorOptions.map(opt => (
               <button
                 key={opt.value}
                 onClick={() => onConnectionColorChange(opt.value)}
                 title={opt.label}
                 className={`
-                  w-5 h-5 rounded-full ${opt.cssColor} transition-all duration-150 border-2
-                  ${connectionColor === opt.value 
-                    ? 'border-foreground scale-125 shadow-lg' 
-                    : 'border-transparent opacity-50 hover:opacity-80'}
+                  w-4 h-4 rounded-full transition-all duration-150 border-2
+                  ${connectionColor === opt.value
+                    ? 'border-foreground scale-125'
+                    : 'border-transparent opacity-40 hover:opacity-70'}
                 `}
+                style={{ backgroundColor: `hsl(var(${opt.cssVar}))` }}
               />
             ))}
           </div>
-
-          <div className="w-px h-6 bg-border" />
 
           {isConnecting && (
             <Button
               variant="outline"
               size="sm"
               onClick={onCancelConnection}
-              className="gap-1 text-string-red border-string-red/50 hover:bg-string-red/10 font-detective text-xs"
+              className="gap-1 text-string-red border-string-red/50 hover:bg-accent/10 font-detective text-[10px] h-7"
             >
-              <X size={14} />
+              <X size={12} />
               Cancelar
             </Button>
           )}
+
           <AddItemDialog onAdd={onAdd} />
-          {cardCount > 0 && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                if (window.confirm('Limpar todo o mural?')) onClear();
-              }}
-              className="gap-1 text-destructive border-destructive/30 hover:bg-destructive/10 font-detective text-xs"
-            >
-              <Trash2 size={14} />
-            </Button>
-          )}
+
+          <button
+            onClick={() => { if (window.confirm('⚠️ Resetar todo o caso e começar uma nova investigação?')) onReset(); }}
+            className="flex items-center gap-1 px-2 py-1.5 rounded text-[10px] font-detective text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors border border-border"
+            title="Novo caso"
+          >
+            <RotateCcw size={12} />
+            NOVO CASO
+          </button>
         </div>
       </div>
 
+      {/* Connection mode indicator */}
       {isConnecting && (
-        <div className="bg-string-red/10 text-center py-1 border-t border-string-red/20">
-          <span className="text-xs text-string-red font-detective animate-pulse">
-            🔗 Selecione a segunda ficha para conectar...
+        <div className="px-4 py-1 border-t border-string-red/20" style={{ background: 'linear-gradient(90deg, hsl(var(--string-red) / 0.1), transparent)' }}>
+          <span className="text-[10px] text-string-red font-detective animate-pulse">
+            ⬤ Modo conexão ativo — selecione a segunda ficha para ligar
           </span>
         </div>
       )}

@@ -19,12 +19,28 @@ export interface Connection {
   color: ConnectionColor;
 }
 
+export interface TimelineEvent {
+  id: string;
+  time: string;
+  description: string;
+  linkedCardId?: string;
+}
+
+export interface Speculation {
+  id: string;
+  text: string;
+  createdAt: number;
+  resolved?: boolean;
+}
+
 export interface BoardState {
   cards: BoardCard[];
   connections: Connection[];
+  timeline: TimelineEvent[];
+  speculations: Speculation[];
+  caseName: string;
 }
 
-// Pre-made image assets
 export interface PresetImage {
   id: string;
   src: string;

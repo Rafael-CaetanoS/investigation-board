@@ -2,11 +2,18 @@ import { useRef, useState, useCallback } from 'react';
 import { BoardCard, CardType } from '@/types/board';
 import { User, Search, Lightbulb, Clock, X, Link, GripVertical } from 'lucide-react';
 
-const typeConfig: Record<CardType, { icon: typeof User; colorClass: string; borderAccent: string; label: string }> = {
-  suspect: { icon: User, colorClass: 'bg-suspect text-suspect-foreground', borderAccent: 'border-l-suspect', label: 'Suspeito' },
-  evidence: { icon: Search, colorClass: 'bg-evidence text-evidence-foreground', borderAccent: 'border-l-evidence', label: 'Prova' },
-  theory: { icon: Lightbulb, colorClass: 'bg-theory text-theory-foreground', borderAccent: 'border-l-theory', label: 'Teoria' },
-  timeline: { icon: Clock, colorClass: 'bg-timeline text-timeline-foreground', borderAccent: 'border-l-timeline', label: 'Horário' },
+const typeConfig: Record<CardType, { icon: typeof User; colorVar: string; glowVar: string; label: string }> = {
+  suspect: { icon: User, colorVar: '--suspect', glowVar: '--suspect-glow', label: 'SUSPEITO' },
+  evidence: { icon: Search, colorVar: '--evidence', glowVar: '--evidence-glow', label: 'PROVA' },
+  theory: { icon: Lightbulb, colorVar: '--theory', glowVar: '--theory-glow', label: 'TEORIA' },
+  timeline: { icon: Clock, colorVar: '--timeline-color', glowVar: '--timeline-glow', label: 'HORÁRIO' },
+};
+
+const typeBgClass: Record<CardType, string> = {
+  suspect: 'bg-suspect text-suspect-foreground',
+  evidence: 'bg-evidence text-evidence-foreground',
+  theory: 'bg-theory text-theory-foreground',
+  timeline: 'bg-timeline-color text-timeline-color-foreground',
 };
 
 interface Props {
@@ -45,71 +52,62 @@ export default function BoardCardComponent({ card, isConnecting, isConnectingSou
     setIsDragging(false);
   }, []);
 
-  const hasImage = card.imageUrl;
+  const hasImage = !!card.imageUrl;
 
   return (
     <div
       className={`absolute select-none card-pin ${isDragging ? 'z-50' : 'z-10'}`}
-      style={{ left: card.x, top: card.y, width: hasImage ? 200 : 220 }}
+      style={{ left: card.x, top: card.y, width: 210 }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
     >
-      <div className={`
-        rounded border-l-4 ${config.borderAccent} bg-card/95 backdrop-blur-sm overflow-hidden
-        transition-all duration-200 border border-border
-        ${isConnectingSource ? 'ring-2 ring-string-red shadow-[0_0_20px_hsl(var(--string-red)/0.5)]' : ''}
-        ${isConnecting && !isConnectingSource ? 'hover:ring-2 hover:ring-string-red cursor-crosshair hover:shadow-[0_0_15px_hsl(var(--string-red)/0.3)]' : ''}
-        ${isDragging ? 'shadow-[0_15px_40px_rgba(0,0,0,0.6)] scale-105' : 'shadow-[0_4px_15px_rgba(0,0,0,0.4)]'}
-      `}>
+      <div
+        className={`
+          rounded-sm overflow-hidden transition-all duration-200 border border-border/60
+          ${isDragging ? 'card-shadow-hover scale-[1.03]' : 'card-shadow'}
+          ${isConnectingSource ? 'ring-2 ring-string-red animate-pulse-glow' : ''}
+          ${isConnecting && !isConnectingSource ? 'hover:ring-2 hover:ring-string-red cursor-crosshair' : ''}
+        `}
+        style={{
+          background: `linear-gradient(180deg, hsl(var(${config.colorVar}) / 0.08) 0%, hsl(var(--card)) 30%)`,
+          borderLeft: `3px solid hsl(var(${config.colorVar}))`,
+        }}
+      >
         {/* Image */}
         {hasImage && (
-          <div className="w-full h-28 overflow-hidden">
-            <img
-              src={card.imageUrl}
-              alt={card.title}
-              className="w-full h-full object-cover"
-              draggable={false}
-            />
+          <div className="relative w-full h-28 overflow-hidden">
+            <img src={card.imageUrl} alt={card.title} className="w-full h-full object-cover" draggable={false} />
+            <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
           </div>
         )}
 
-        {/* Header */}
-        <div className={`${config.colorClass} px-3 py-1.5 flex items-center justify-between`}>
+        {/* Type badge + actions */}
+        <div className={`${typeBgClass[card.type]} px-2.5 py-1 flex items-center justify-between`}>
           <div className="flex items-center gap-1.5">
-            <Icon size={13} />
-            <span className="text-[10px] font-bold uppercase tracking-widest font-detective">{config.label}</span>
+            <Icon size={11} strokeWidth={2.5} />
+            <span className="text-[9px] font-bold tracking-[0.2em] font-detective">{config.label}</span>
           </div>
           <div className="flex items-center gap-0.5" data-no-drag>
-            <button
-              onClick={() => onConnect(card.id)}
-              className="p-1 rounded hover:bg-black/20 transition-colors"
-              title={isConnecting ? "Conectar aqui" : "Iniciar conexão"}
-            >
-              <Link size={12} />
+            <button onClick={() => onConnect(card.id)} className="p-0.5 rounded hover:bg-black/20 transition-colors" title="Conectar">
+              <Link size={11} />
             </button>
-            <button
-              onClick={() => onDelete(card.id)}
-              className="p-1 rounded hover:bg-black/20 transition-colors"
-              title="Remover"
-            >
-              <X size={12} />
+            <button onClick={() => onDelete(card.id)} className="p-0.5 rounded hover:bg-black/20 transition-colors" title="Remover">
+              <X size={11} />
             </button>
           </div>
         </div>
 
-        {/* Body */}
-        <div className="px-3 py-2">
-          <h3 className="font-detective text-sm font-bold text-foreground leading-tight">{card.title}</h3>
+        {/* Content */}
+        <div className="px-3 py-2 bg-card/90">
+          <h3 className="font-detective text-[13px] font-bold text-foreground leading-tight">{card.title}</h3>
           {card.description && (
-            <p className="text-[11px] text-muted-foreground font-typewriter leading-relaxed mt-1">{card.description}</p>
+            <p className="text-[10px] text-muted-foreground font-typewriter leading-relaxed mt-1.5 line-clamp-3">{card.description}</p>
           )}
         </div>
 
-        {/* Drag indicator */}
-        <div className="flex justify-center pb-1 text-muted-foreground/20">
-          <GripVertical size={12} />
-        </div>
+        {/* Bottom accent line */}
+        <div className="h-[2px]" style={{ background: `linear-gradient(90deg, hsl(var(${config.colorVar})), transparent)` }} />
       </div>
     </div>
   );
