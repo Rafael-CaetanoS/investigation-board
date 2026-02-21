@@ -1,6 +1,7 @@
 import { CardType, ConnectionColor } from '@/types/board';
 import AddItemDialog from './AddItemDialog';
-import { Trash2, X, RotateCcw, FileText } from 'lucide-react';
+import { Trash2, X, RotateCcw, FileText, ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 
@@ -29,6 +30,7 @@ export default function BoardToolbar({
 }: Props) {
   const [isEditing, setIsEditing] = useState(false);
   const [tempName, setTempName] = useState(caseName);
+  const navigate = useNavigate();
 
   const handleNameSave = () => {
     onCaseNameChange(tempName.trim() || 'Caso Sem Nome');
@@ -38,8 +40,15 @@ export default function BoardToolbar({
   return (
     <div className="fixed top-0 left-0 right-0 z-50 glass-panel border-b border-border">
       <div className="flex items-center justify-between px-4 py-2">
-        {/* Left: Case name */}
+        {/* Left: Back + Case name */}
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate('/')}
+            className="p-1.5 rounded hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+            title="Voltar aos casos"
+          >
+            <ArrowLeft size={16} />
+          </button>
           <div className="flex items-center gap-2">
             <FileText size={16} className="text-primary" />
             {isEditing ? (
