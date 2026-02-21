@@ -2,11 +2,11 @@ import { useRef, useState, useCallback } from 'react';
 import { BoardCard, CardType } from '@/types/board';
 import { User, Search, Lightbulb, Clock, X, Link, GripVertical } from 'lucide-react';
 
-const typeConfig: Record<CardType, { icon: typeof User; colorClass: string; label: string }> = {
-  suspect: { icon: User, colorClass: 'bg-suspect text-suspect-foreground', label: 'Suspeito' },
-  evidence: { icon: Search, colorClass: 'bg-evidence text-evidence-foreground', label: 'Prova' },
-  theory: { icon: Lightbulb, colorClass: 'bg-theory text-theory-foreground', label: 'Teoria' },
-  timeline: { icon: Clock, colorClass: 'bg-timeline text-timeline-foreground', label: 'Horário' },
+const typeConfig: Record<CardType, { icon: typeof User; colorClass: string; borderAccent: string; label: string }> = {
+  suspect: { icon: User, colorClass: 'bg-suspect text-suspect-foreground', borderAccent: 'border-l-suspect', label: 'Suspeito' },
+  evidence: { icon: Search, colorClass: 'bg-evidence text-evidence-foreground', borderAccent: 'border-l-evidence', label: 'Prova' },
+  theory: { icon: Lightbulb, colorClass: 'bg-theory text-theory-foreground', borderAccent: 'border-l-theory', label: 'Teoria' },
+  timeline: { icon: Clock, colorClass: 'bg-timeline text-timeline-foreground', borderAccent: 'border-l-timeline', label: 'Horário' },
 };
 
 interface Props {
@@ -45,38 +45,52 @@ export default function BoardCardComponent({ card, isConnecting, isConnectingSou
     setIsDragging(false);
   }, []);
 
+  const hasImage = card.imageUrl;
+
   return (
     <div
       className={`absolute select-none card-pin ${isDragging ? 'z-50' : 'z-10'}`}
-      style={{ left: card.x, top: card.y, width: 220 }}
+      style={{ left: card.x, top: card.y, width: hasImage ? 200 : 220 }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
     >
       <div className={`
-        rounded border border-border bg-card shadow-lg overflow-hidden
-        transition-shadow duration-200
-        ${isConnectingSource ? 'ring-2 ring-string-red shadow-[0_0_15px_hsl(var(--string-red)/0.4)]' : ''}
-        ${isConnecting && !isConnectingSource ? 'hover:ring-2 hover:ring-string-red cursor-crosshair' : ''}
-        ${isDragging ? 'shadow-2xl' : ''}
+        rounded border-l-4 ${config.borderAccent} bg-card/95 backdrop-blur-sm overflow-hidden
+        transition-all duration-200 border border-border
+        ${isConnectingSource ? 'ring-2 ring-string-red shadow-[0_0_20px_hsl(var(--string-red)/0.5)]' : ''}
+        ${isConnecting && !isConnectingSource ? 'hover:ring-2 hover:ring-string-red cursor-crosshair hover:shadow-[0_0_15px_hsl(var(--string-red)/0.3)]' : ''}
+        ${isDragging ? 'shadow-[0_15px_40px_rgba(0,0,0,0.6)] scale-105' : 'shadow-[0_4px_15px_rgba(0,0,0,0.4)]'}
       `}>
+        {/* Image */}
+        {hasImage && (
+          <div className="w-full h-28 overflow-hidden">
+            <img
+              src={card.imageUrl}
+              alt={card.title}
+              className="w-full h-full object-cover"
+              draggable={false}
+            />
+          </div>
+        )}
+
         {/* Header */}
         <div className={`${config.colorClass} px-3 py-1.5 flex items-center justify-between`}>
           <div className="flex items-center gap-1.5">
-            <Icon size={14} />
-            <span className="text-xs font-bold uppercase tracking-wider font-detective">{config.label}</span>
+            <Icon size={13} />
+            <span className="text-[10px] font-bold uppercase tracking-widest font-detective">{config.label}</span>
           </div>
-          <div className="flex items-center gap-1" data-no-drag>
+          <div className="flex items-center gap-0.5" data-no-drag>
             <button
               onClick={() => onConnect(card.id)}
-              className="p-0.5 rounded hover:bg-black/20 transition-colors"
+              className="p-1 rounded hover:bg-black/20 transition-colors"
               title={isConnecting ? "Conectar aqui" : "Iniciar conexão"}
             >
               <Link size={12} />
             </button>
             <button
               onClick={() => onDelete(card.id)}
-              className="p-0.5 rounded hover:bg-black/20 transition-colors"
+              className="p-1 rounded hover:bg-black/20 transition-colors"
               title="Remover"
             >
               <X size={12} />
@@ -85,16 +99,16 @@ export default function BoardCardComponent({ card, isConnecting, isConnectingSou
         </div>
 
         {/* Body */}
-        <div className="p-3">
-          <h3 className="font-detective text-sm font-bold text-foreground mb-1 leading-tight">{card.title}</h3>
+        <div className="px-3 py-2">
+          <h3 className="font-detective text-sm font-bold text-foreground leading-tight">{card.title}</h3>
           {card.description && (
-            <p className="text-xs text-muted-foreground font-typewriter leading-relaxed">{card.description}</p>
+            <p className="text-[11px] text-muted-foreground font-typewriter leading-relaxed mt-1">{card.description}</p>
           )}
         </div>
 
-        {/* Drag handle */}
-        <div className="flex justify-center pb-1 text-muted-foreground/30">
-          <GripVertical size={14} />
+        {/* Drag indicator */}
+        <div className="flex justify-center pb-1 text-muted-foreground/20">
+          <GripVertical size={12} />
         </div>
       </div>
     </div>

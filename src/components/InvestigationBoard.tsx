@@ -16,6 +16,8 @@ export default function InvestigationBoard() {
         onCancelConnection={board.cancelConnection}
         cardCount={board.cards.length}
         connectionCount={board.connections.length}
+        connectionColor={board.connectionColor}
+        onConnectionColorChange={board.setConnectionColor}
       />
 
       {/* Board surface */}
@@ -30,8 +32,13 @@ export default function InvestigationBoard() {
           paddingTop: 60,
         }}
       >
-        {/* Dark overlay for mood */}
-        <div className="absolute inset-0 bg-background/40 pointer-events-none" />
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-background/30 pointer-events-none" />
+        
+        {/* Vignette effect */}
+        <div className="absolute inset-0 pointer-events-none" style={{
+          background: 'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.5) 100%)'
+        }} />
 
         <ConnectionLines
           connections={board.connections}
@@ -54,11 +61,17 @@ export default function InvestigationBoard() {
         {/* Empty state */}
         {board.cards.length === 0 && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="text-center">
-              <p className="font-detective text-2xl text-foreground/30 mb-2">Caso em aberto</p>
-              <p className="text-sm text-muted-foreground/50 font-typewriter">
-                Clique em "Adicionar" para começar a investigação
+            <div className="text-center space-y-3">
+              <p className="font-detective text-3xl text-foreground/20">Caso em aberto</p>
+              <p className="text-sm text-muted-foreground/40 font-typewriter">
+                Clique em "+ Adicionar" para começar a investigação
               </p>
+              <div className="flex justify-center gap-4 mt-4 text-muted-foreground/20">
+                <span className="text-xs font-typewriter">📌 Suspeitos</span>
+                <span className="text-xs font-typewriter">🔍 Provas</span>
+                <span className="text-xs font-typewriter">💡 Teorias</span>
+                <span className="text-xs font-typewriter">🕐 Horários</span>
+              </div>
             </div>
           </div>
         )}
