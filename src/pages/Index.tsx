@@ -1,5 +1,5 @@
-import InvestigationBoard from '@/components/InvestigationBoard';
+import CaseSelector from '@/components/CaseSelector';
 
-const Index = () => <InvestigationBoard />;
+const Index = () => <CaseSelector />;
 
 export default Index;
